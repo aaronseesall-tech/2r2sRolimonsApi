@@ -1,24 +1,30 @@
-import express from "express";
-import fetch from "node-fetch";
-
+const express = require("express");
+const axios = require("axios");
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-    res.send("Rolimons API is running!");
-});
+app.get("/player/:id", async (req, res) => {
+    const id = req.params.id;
 
-app.get("/userinfo/:id", async (req, res) => {
     try {
-        const id = req.params.id;
+        const response = await axios.get(`https://users.roblox.com/v1/users/${id}`);
 
-        const response = await fetch(`https://www.rolimons.com/playerapi/player/${id}`);
-        const data = await response.json();
+        res.json({
+            username: response.data.name,
+            displayName: response.data.displayName,
+            created: response.data.created,
+            description: response.data.description
+        });
 
-        res.json(data);
     } catch (err) {
-        res.json({ error: "Failed to fetch Rolimons data" });
+        res.status(500).json({ error: "Failed to fetch user" });
     }
 });
 
-app.listen(PORT, () => console.log("API online on port " + PORT));
+// Render needs this
+app.get("/", (req, res) => {
+    res.send("API is running");
+});
+
+app.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
